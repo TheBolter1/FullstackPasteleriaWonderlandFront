@@ -1,4 +1,4 @@
-import Data_Catalogo from "../lib/Data_Catalogo.jsx";
+
 import { useNavigate } from "react-router-dom"; 
 import DetalleProducto from "../pages/DetalleProducto.jsx";
 

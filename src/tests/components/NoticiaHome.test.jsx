@@ -1,3 +1,4 @@
+// src/tests/components/NoticiaHome.test.jsx
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, cleanup } from '@testing-library/react';
@@ -60,7 +61,7 @@ describe('NoticiaHome.jsx', () => {
     renderNoticiaHome();
 
     await waitFor(() =>
-      expect(screen.getByText(/error/i)).toBeInTheDocument()
+      expect(screen.getByText(/no hay noticias disponibles/i)).toBeInTheDocument()
     );
   });
 });
