@@ -1,39 +1,68 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const [correo, setCorreo] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const forceLogin = params.get("forceLogin");
 
-  const usuario = {
-    correo: "admin@wonderland.cl",
-    contrasena: "clave123",
-  };
-
   useEffect(() => {
     const usuarioActivo = localStorage.getItem("usuarioActivo");
     const rol = localStorage.getItem("rol");
 
-    if (!forceLogin && usuarioActivo && rol === "admin") {
-      navigate("/administracion");
+    if (!forceLogin && usuarioActivo) {
+      navigate(rol === "ADMIN" ? "/administracion" : "/home");
     }
   }, [navigate, forceLogin]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (correo === usuario.correo && contrasena === usuario.contrasena) {
-      localStorage.setItem("usuarioActivo", correo);
-      localStorage.setItem("rol", "admin");
-      navigate("/administracion");
-    } else {
-      setError("Usuario o contraseña incorrectos");
+    try {
+      const correoEncoded = encodeURIComponent(correo);
+
+      const res = await axios.get(
+        `http://localhost:9090/api/user/correo/${correoEncoded}`
+      );
+
+      const usuario = res.data;
+
+      if (!usuario) {
+        setError("Usuario no encontrado ❌");
+        return;
+      }
+
+      if (!usuario.passwordHash) {
+        setError("Error al validar credenciales ❌");
+        return;
+      }
+
+      if (usuario.passwordHash !== contrasena) {
+        setError("Usuario o contraseña incorrectos ❌");
+        return;
+      }
+
+      // Guardar sesión
+      localStorage.setItem("usuarioActivo", usuario.correo);
+      localStorage.setItem("rol", usuario.rol);
+      localStorage.setItem("nombres", usuario.nombres);
+      localStorage.setItem("apellidos", usuario.apellidos);
+
+      navigate(usuario.rol === "ADMIN" ? "/administracion" : "/home");
+    } catch (err) {
+      console.error("Error en login:", err);
+      if (err.response?.status === 404) {
+        setError("Usuario no encontrado ❌");
+      } else {
+        setError("Error de conexión con el servidor");
+      }
     }
   };
 
@@ -42,7 +71,7 @@ function Login() {
       {/* HEADER */}
       <header>
         <nav className="nav">
-          <Link to="/">
+          <Link to="/home">
             <img
               src="/assets/img/Logos/Header.png"
               alt="Pastelería Wonderland"
@@ -65,9 +94,7 @@ function Login() {
 
               <form onSubmit={handleSubmit} noValidate>
                 <div className="field mb-3">
-                  <label className="label" htmlFor="correo">
-                    CORREO
-                  </label>
+                  <label className="label" htmlFor="correo">CORREO</label>
                   <input
                     id="correo"
                     type="email"
@@ -75,13 +102,12 @@ function Login() {
                     value={correo}
                     onChange={(e) => setCorreo(e.target.value)}
                     onFocus={() => error && setError("")}
+                    required
                   />
                 </div>
 
                 <div className="field mb-2">
-                  <label className="label" htmlFor="contrasena">
-                    CONTRASEÑA
-                  </label>
+                  <label className="label" htmlFor="contrasena">CONTRASEÑA</label>
                   <input
                     id="contrasena"
                     type="password"
@@ -89,6 +115,7 @@ function Login() {
                     value={contrasena}
                     onChange={(e) => setContrasena(e.target.value)}
                     onFocus={() => error && setError("")}
+                    required
                   />
                 </div>
 
@@ -102,9 +129,11 @@ function Login() {
                   <button className="btn btn-primary flex-grow-1" type="submit">
                     Acceder
                   </button>
-                  <button className="btn btn-outline flex-grow-1" type="button">
+
+                  {/* CORREGIDO: antes decía /crear-producto */}
+                  <Link to="/register" className="btn btn-outline flex-grow-1">
                     Crear cuenta
-                  </button>
+                  </Link>
                 </div>
               </form>
             </div>
@@ -116,9 +145,7 @@ function Login() {
       <footer id="site-footer-login" className="mt-auto py-3">
         <div className="footer-content text-center">
           <p className="mb-1">&copy; Pastelería Wonderland — 2025</p>
-          <a href="#" className="small text-decoration-none">
-            Política de privacidad
-          </a>
+          <a href="#" className="small text-decoration-none">Política de privacidad</a>
         </div>
       </footer>
     </div>

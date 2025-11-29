@@ -1,4 +1,4 @@
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import AlertaSimple from "../components/AlertaSimple.jsx";
@@ -11,24 +11,26 @@ document.title = "Detalle de producto | Pastelería Wonderland";
 
 function DetalleProducto() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [producto, setProducto] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [cantidad, setCantidad] = useState(1);
   const [alerta, setAlerta] = useState({ msg: "", type: "" });
 
-  // Cargar producto desde el backend
   useEffect(() => {
     const fetchProducto = async () => {
       try {
         const res = await axios.get(`http://localhost:8080/api/producto/${id}`);
+        if (!res.data) throw new Error("Producto no encontrado");
         setProducto(res.data);
-      } catch (error) {
-        setAlerta({ msg: "Producto no encontrado", type: "danger" });
-        navigate("/productos");
+      } catch (err) {
+        setError(true);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducto();
-  }, [id, navigate]);
+  }, [id]);
 
   const aumentarCantidad = () => {
     if (cantidad < 8) setCantidad(cantidad + 1);
@@ -41,29 +43,26 @@ function DetalleProducto() {
 
   const agregarAlCarrito = () => {
     if (!producto) return;
-
     const carritoActual = JSON.parse(localStorage.getItem("cart")) || [];
-    const existente = carritoActual.find((p) => p.id === producto.id);
-
+    const existente = carritoActual.find((p) => p.idProducto === producto.idProducto);
     if (existente) {
       const nuevaCantidad = Math.min(existente.cantidad + cantidad, 8);
-      if (existente.cantidad + cantidad > 8) {
+      existente.cantidad = nuevaCantidad;
+      if (existente.cantidad === 8) {
         setAlerta({ msg: "Cantidad máxima: 8 unidades", type: "warning" });
       }
-      existente.cantidad = nuevaCantidad;
     } else {
       carritoActual.push({ ...producto, cantidad });
     }
-
     localStorage.setItem("cart", JSON.stringify(carritoActual));
     window.dispatchEvent(new Event("cartUpdated"));
     setAlerta({
-      msg: `${producto.nombre} agregado al carrito (${cantidad} unidad${cantidad > 1 ? "es" : ""})`,
+      msg: `${producto.nombreProducto} agregado al carrito (${cantidad} unidad${cantidad > 1 ? "es" : ""})`,
       type: "success",
     });
   };
 
-  if (!producto) {
+  if (loading) {
     return (
       <>
         <Navbar />
@@ -75,14 +74,14 @@ function DetalleProducto() {
     );
   }
 
+  if (error) {
+    return <Navigate to="/productos" replace />;
+  }
+
   return (
     <>
       <Navbar />
-      <AlertaSimple
-        message={alerta.msg}
-        type={alerta.type}
-        onClose={() => setAlerta({ msg: "", type: "" })}
-      />
+      <AlertaSimple message={alerta.msg} type={alerta.type} onClose={() => setAlerta({ msg: "", type: "" })} />
       <div className="container-fluid py-5 px-md-5 bg-light">
         <div className="container-lg p-4 bg-white rounded-4 shadow-sm">
           <nav aria-label="breadcrumb" className="mb-4">
@@ -94,7 +93,7 @@ function DetalleProducto() {
                 <Link to="/productos" className="text-decoration-none text-secondary">Productos</Link>
               </li>
               <li className="breadcrumb-item active text-dark" aria-current="page">
-                {producto?.nombre || "Producto"}
+                {producto.nombreProducto}
               </li>
             </ol>
           </nav>
@@ -102,8 +101,8 @@ function DetalleProducto() {
           <div className="row align-items-center g-5">
             <div className="col-lg-6 col-md-6 text-center">
               <img
-                src={producto?.imagen}
-                alt={producto?.nombre}
+                src={producto.imagen}
+                alt={producto.nombreProducto}
                 className="img-fluid rounded-4 shadow"
                 style={{ maxHeight: "480px", width: "100%", objectFit: "cover" }}
               />
@@ -111,13 +110,13 @@ function DetalleProducto() {
 
             <div className="col-lg-6 col-md-6 text-center text-md-start">
               <h2 className="text-uppercase fw-bold display-5 mb-3" style={{ color: "#b1976b" }}>
-                {producto?.nombre}
+                {producto.nombreProducto}
               </h2>
               <h4 className="fw-semibold mb-4" style={{ color: "#6c757d" }}>
-                ${producto?.precio?.toLocaleString() || '0'}
+                ${producto.precio?.toLocaleString("es-CL") || '0'}
               </h4>
               <p className="text-muted" style={{ fontSize: "1rem", lineHeight: "1.8", color: "#6f6f6f", fontWeight: "400", letterSpacing: "0.3px" }}>
-                {producto?.descripcion || "Descripción no disponible."}
+                {producto.descripcion || "Descripción no disponible."}
               </p>
 
               <div className="d-flex flex-column flex-md-row align-items-center gap-3 mt-4">
@@ -139,7 +138,7 @@ function DetalleProducto() {
           </div>
         </div>
       </div>
-      <Recomendados productoId={producto?.id} />
+      <Recomendados productoId={producto.idProducto} />
       <Footer />
     </>
   );

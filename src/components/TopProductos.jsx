@@ -1,19 +1,40 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 function TopProductos() {
   const [productos, setProductos] = useState([]);
 
   useEffect(() => {
-    const catalogo = JSON.parse(localStorage.getItem("catalogoProductos")) || [];
+    // Llamada al backend
+    axios
+      .get("http://localhost:9090/api/producto") // ← puerto corregido
+      .then((response) => {
+        const catalogo = response.data; // asumimos que el backend devuelve un array de productos
 
-    const catalogoConVentas = catalogo.map((prod) => ({
-      ...prod,
-      ventasSemanales: Math.floor(Math.random() * (60 - 5 + 1)) + 5,
-    }));
+        // Normalizar campos (por si backend usa nombreProducto / idProducto)
+        const catalogoNormalizado = catalogo.map((prod) => ({
+          id: prod.id || prod.idProducto,
+          nombre: prod.nombre || prod.nombreProducto,
+          imagen: prod.imagen,
+          categoria: prod.categoria,
+          precio: prod.precio,
+          ventas: prod.ventas || 0,
+        }));
 
-    const top10 = catalogoConVentas.slice(0, 10);
+        // Agregar ventas semanales aleatorias (ejemplo)
+        const catalogoConVentas = catalogoNormalizado.map((prod) => ({
+          ...prod,
+          ventasSemanales: Math.floor(Math.random() * (60 - 5 + 1)) + 5,
+        }));
 
-    setProductos(top10);
+        // Top 10
+        const top10 = catalogoConVentas.slice(0, 10);
+        setProductos(top10);
+      })
+      .catch((error) => {
+        console.error("Error al cargar los productos:", error);
+        setProductos([]); // en caso de error dejamos el array vacío
+      });
   }, []);
 
   return (
@@ -49,12 +70,14 @@ function TopProductos() {
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
             >
               <h5 className="mb-2 text-primary">#{index + 1}</h5>
-              <img
-                src={prod.imagen}
-                alt={prod.nombre}
-                className="d-block mx-auto mb-2"
-                style={{ width: "100px", height: "100px", objectFit: "cover" }}
-              />
+              {prod.imagen && (
+                <img
+                  src={prod.imagen}
+                  alt={prod.nombre}
+                  className="d-block mx-auto mb-2"
+                  style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                />
+              )}
               <p className="mb-1">
                 <strong>ID:</strong> {prod.id}
               </p>

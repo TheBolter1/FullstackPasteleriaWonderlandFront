@@ -15,7 +15,7 @@ function Home() {
 
     // Traer productos desde el backend
     useEffect(() => {
-        axios.get("http://localhost:8080/api/producto")
+        axios.get("http://localhost:9090/api/producto")
             .then(res => {
                 setProductos(res.data);
                 const masVendidos = [...res.data]

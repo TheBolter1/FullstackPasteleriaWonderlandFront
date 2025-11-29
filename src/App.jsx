@@ -9,8 +9,6 @@ const Carro = lazy(() => import("./pages/Carro.jsx"));
 const DetalleProducto = lazy(() => import("./pages/DetalleProducto.jsx"));
 const Login = lazy(() => import("./pages/Login.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
-
-
 const ListaProductos = lazy(() => import("./components/ListaProductos.jsx"));
 const CrearProducto = lazy(() => import("./components/CrearProductos.jsx"));
 

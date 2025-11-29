@@ -2,29 +2,32 @@ import React, { useState } from "react";
 import axios from "axios";
 
 const CrearProducto = () => {
-  const [nombre, setNombre] = useState("");
+  const [nombreProducto, setNombreProducto] = useState("");
   const [precio, setPrecio] = useState("");
   const [categoria, setCategoria] = useState("");
   const [imagen, setImagen] = useState("");
+  const [descripcion, setDescripcion] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const nuevoProducto = {
-      nombre,
+      nombreProducto,
       precio: Number(precio),
       categoria,
-      imagen
+      imagen,
+      descripcion
     };
 
-    axios.post("http://localhost:8080/api/producto", nuevoProducto)
+    axios.post("http://localhost:9090/api/producto", nuevoProducto)
       .then(response => {
         console.log("Producto creado:", response.data);
         // Limpiar formulario
-        setNombre("");
+        setNombreProducto("");
         setPrecio("");
         setCategoria("");
         setImagen("");
+        setDescripcion("");
       })
       .catch(error => console.error("Error al crear producto:", error));
   };
@@ -34,8 +37,8 @@ const CrearProducto = () => {
       <input
         type="text"
         placeholder="Nombre"
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
+        value={nombreProducto}
+        onChange={(e) => setNombreProducto(e.target.value)}
         required
       />
       <input
@@ -56,6 +59,11 @@ const CrearProducto = () => {
         placeholder="Imagen URL"
         value={imagen}
         onChange={(e) => setImagen(e.target.value)}
+      />
+      <textarea
+        placeholder="Descripción"
+        value={descripcion}
+        onChange={(e) => setDescripcion(e.target.value)}
       />
       <button type="submit">Crear Producto</button>
     </form>
