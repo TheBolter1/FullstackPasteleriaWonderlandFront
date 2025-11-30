@@ -1,13 +1,16 @@
+// src/api/axiosConfig.js
 import axios from "axios";
 
-axios.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("token");
+const api = axios.create({
+  baseURL: "http://localhost:9090", // 👈 tu backend
+});
 
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
-export default axios;
+export default api;

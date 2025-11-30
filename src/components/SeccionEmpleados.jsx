@@ -1,7 +1,7 @@
 import { useState } from "react";
 import EmpleadoForm from "./FormularioEmpleado";
 
-function SeccionEmpleados({ empleados, setEmpleados }) {
+function SeccionEmpleados({ empleados, setEmpleados, loading }) {
   const [accion, setAccion] = useState("mostrar");
   const [empleadoEdit, setEmpleadoEdit] = useState(null);
 
@@ -88,7 +88,13 @@ function SeccionEmpleados({ empleados, setEmpleados }) {
                 </tr>
               </thead>
               <tbody>
-                {empleados.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" className="text-center text-muted">
+                      Cargando empleados...
+                    </td>
+                  </tr>
+                ) : empleados.length > 0 ? (
                   empleados.map((e) => (
                     <tr
                       key={e.rut}
@@ -96,7 +102,9 @@ function SeccionEmpleados({ empleados, setEmpleados }) {
                       style={{
                         cursor: "pointer",
                         backgroundColor:
-                          empleadoEdit?.rut === e.rut ? "#f0f0f0" : "transparent",
+                          empleadoEdit?.rut === e.rut
+                            ? "#f0f0f0"
+                            : "transparent",
                       }}
                     >
                       <td>{e.rut}</td>
@@ -107,7 +115,10 @@ function SeccionEmpleados({ empleados, setEmpleados }) {
                       <td>
                         <button
                           className="btn btn-sm btn-outline-primary"
-                          onClick={() => iniciarEditar(e)}
+                          onClick={(ev) => {
+                            ev.stopPropagation();
+                            iniciarEditar(e);
+                          }}
                         >
                           Editar
                         </button>
@@ -131,10 +142,3 @@ function SeccionEmpleados({ empleados, setEmpleados }) {
 }
 
 export default SeccionEmpleados;
-
-
-
-
-
-
-

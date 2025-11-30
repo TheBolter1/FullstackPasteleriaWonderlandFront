@@ -12,7 +12,7 @@ function SidebarAdmin({
   return (
     
     <div
-  data-testid="sidebar-admin"  // <- aquí
+  data-testid="sidebar-admin" 
   className={`offcanvas offcanvas-end ${visible ? "show" : ""}`}
   style={{ 
     visibility: visible ? "visible" : "hidden",

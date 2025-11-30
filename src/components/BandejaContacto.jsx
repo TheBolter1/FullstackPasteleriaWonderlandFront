@@ -1,40 +1,37 @@
 import { useState, useEffect } from "react";
+import axios from "../api/axiosConfig";
 
 function BandejaContacto() {
   const [mensajes, setMensajes] = useState([]);
   const [mensajeSeleccionado, setMensajeSeleccionado] = useState(null);
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
-    fetch("/mensajes.json")
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data || data.length === 0) {
-          setMensajes([
-            {
-              fecha: new Date().toLocaleDateString(),
-              nombre: "Torta de matrimonio",
-              correo: "fran@duocuc.cl",
-              orden: "-",
-              mensaje:
-                "Necesitamos una torta de boda muy grande, de tres pisos, con decoración elegante y flores comestibles. El evento será el 15 de diciembre y necesitamos que la entrega sea puntual en la iglesia central. Además, queremos que tenga sabor vainilla con relleno de frambuesa en todos los pisos. Por favor, confirmen disponibilidad y precio."
-            }
-          ]);
-        } else {
-          setMensajes(data);
+    let isMounted = true;
+
+    const cargarMensajes = async () => {
+      try {
+        const res = await axios.get("/api/mensajes");
+        if (isMounted) {
+          setMensajes(res.data || []);
         }
-      })
-      .catch(() => {
-        setMensajes([
-          {
-            fecha: new Date().toLocaleDateString(),
-            nombre: "Torta de matrimonio",
-            correo: "fran@duocuc.cl",
-            orden: "-",
-            mensaje:
-              "Necesitamos una torta de boda muy grande, de tres pisos, con decoración elegante y flores comestibles. El evento será el 15 de diciembre y necesitamos que la entrega sea puntual en la iglesia central. Además, queremos que tenga sabor vainilla con relleno de frambuesa en todos los pisos. Por favor, confirmen disponibilidad y precio."
-          }
-        ]);
-      });
+      } catch (err) {
+        console.error("Error cargando mensajes:", err);
+        if (isMounted) {
+          setMensajes([]);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    cargarMensajes();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -56,23 +53,41 @@ function BandejaContacto() {
               </tr>
             </thead>
             <tbody>
-              {mensajes.map((m, index) => (
-                <tr key={index}>
-                  <td>{m.fecha}</td>
-                  <td>{m.nombre}</td>
-                  <td>{m.correo}</td>
-                  <td>{m.orden || "-"}</td>
-                  <td>{m.mensaje.length > 50 ? m.mensaje.substring(0, 50) + "..." : m.mensaje}</td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={() => setMensajeSeleccionado(m)}
-                    >
-                      Ver completo
-                    </button>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-muted">
+                    Cargando mensajes...
                   </td>
                 </tr>
-              ))}
+              ) : mensajes.length > 0 ? (
+                mensajes.map((m) => (
+                  <tr key={m.id}>
+                    <td>{m.fecha}</td>
+                    <td>{m.nombre}</td>
+                    <td>{m.correo}</td>
+                    <td>{m.orden || "-"}</td>
+                    <td>
+                      {m.mensaje && m.mensaje.length > 50
+                        ? m.mensaje.substring(0, 50) + "..."
+                        : m.mensaje}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => setMensajeSeleccionado(m)}
+                      >
+                        Ver completo
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="text-center text-muted">
+                    No hay mensajes para mostrar.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -108,6 +123,14 @@ function BandejaContacto() {
             onClick={(e) => e.stopPropagation()}
           >
             <h5>Mensaje de {mensajeSeleccionado.nombre}</h5>
+            <p className="text-muted mb-1">
+              <strong>Correo:</strong> {mensajeSeleccionado.correo}
+            </p>
+            {mensajeSeleccionado.orden && (
+              <p className="text-muted mb-2">
+                <strong>Orden:</strong> {mensajeSeleccionado.orden}
+              </p>
+            )}
             <p>{mensajeSeleccionado.mensaje}</p>
             <div className="text-end">
               <button

@@ -4,16 +4,18 @@ import React, { Suspense, lazy } from "react";
 
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
+import Login from "./pages/Login.jsx";
+import Admin from "./pages/Admin.jsx";
+import Carro from "./pages/Carro.jsx";
+import ListaProductos from "./components/ListaProductos.jsx";
+import CrearProducto from "./components/CrearProductos.jsx";
 
 const Home = lazy(() => import("./pages/Home.jsx"));
 const Productos = lazy(() => import("./pages/Productos.jsx"));
 const Contacto = lazy(() => import("./pages/Contacto.jsx"));
-const Carro = lazy(() => import("./pages/Carro.jsx"));
 const DetalleProducto = lazy(() => import("./pages/DetalleProducto.jsx"));
-const Login = lazy(() => import("./pages/Login.jsx"));
-const Admin = lazy(() => import("./pages/Admin.jsx"));
-const ListaProductos = lazy(() => import("./components/ListaProductos.jsx"));
-const CrearProducto = lazy(() => import("./components/CrearProductos.jsx"));
+
+
 
 function App() {
   return (
@@ -31,17 +33,16 @@ function App() {
         }
       >
         <Routes>
-  
           <Route path="/" element={<Navigate to="/home" />} />
 
-          {/* Rutas públicas */}
+         
           <Route path="/home" element={<Home />} />
           <Route path="/productos" element={<Productos />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/inicio-sesion" element={<Login />} />
-
           <Route path="/producto/:id" element={<DetalleProducto />} />
 
+     
           <Route
             path="/carro-de-compras"
             element={
@@ -51,9 +52,7 @@ function App() {
             }
           />
 
-  
-
-  
+        
           <Route
             path="/administracion"
             element={

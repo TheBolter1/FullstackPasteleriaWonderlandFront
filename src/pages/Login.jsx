@@ -12,7 +12,7 @@ function Login() {
   const params = new URLSearchParams(location.search);
   const forceLogin = params.get("forceLogin");
 
-  // Si el usuario ya está logueado, evitar que vuelva al login
+
   useEffect(() => {
     const token = sessionStorage.getItem("token");
     const rol = sessionStorage.getItem("rol");
