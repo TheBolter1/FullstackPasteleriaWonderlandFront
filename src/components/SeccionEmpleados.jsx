@@ -1,9 +1,11 @@
 import { useState } from "react";
 import EmpleadoForm from "./FormularioEmpleado";
+import axios from "../api/axiosConfig";
 
 function SeccionEmpleados({ empleados, setEmpleados, loading }) {
   const [accion, setAccion] = useState("mostrar");
   const [empleadoEdit, setEmpleadoEdit] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const iniciarAgregar = () => {
     setEmpleadoEdit(null);
@@ -18,22 +20,81 @@ function SeccionEmpleados({ empleados, setEmpleados, loading }) {
 
   const cancelar = () => setAccion("mostrar");
 
-  const handleGuardarEmpleado = (empleado) => {
-    const empleadoConApellidos = {
-      ...empleado,
-      apellidos: `${empleado.apellido1} ${empleado.apellido2}`.trim(),
+  const handleGuardarEmpleado = async (empleado) => {
+    setSaving(true);
+
+    const apellidos = `${empleado.apellido1 || ""} ${
+      empleado.apellido2 || ""
+    }`.trim();
+
+    const payload = {
+      rut: empleado.rut,
+      dv: empleado.dv,
+      nombres: empleado.nombres,
+      apellidos,
+      correo: empleado.correo,
+      telefono: empleado.telefono,
+      cargo: empleado.cargo,
+      direccion: empleado.direccion,
+      fecha_nacimiento: empleado.fecha_nacimiento,
     };
 
-    if (accion === "editar") {
-      setEmpleados(
-        empleados.map((e) => (e.rut === empleado.rut ? empleadoConApellidos : e))
-      );
-    } else {
-      setEmpleados([...empleados, empleadoConApellidos]);
+    try {
+      let res;
+      let guardado;
+
+      if (accion === "editar") {
+        res = await axios.put(`/api/empleados/${empleado.rut}`, payload);
+        guardado = res.data;
+
+        setEmpleados((prev) =>
+          prev.map((e) => (e.rut === guardado.rut ? guardado : e))
+        );
+
+        alert("Empleado actualizado correctamente");
+      } else {
+        res = await axios.post("/api/empleados", payload);
+        guardado = res.data;
+
+        setEmpleados((prev) => [...prev, guardado]);
+        alert("Empleado creado correctamente");
+      }
+
+      setEmpleadoEdit(guardado);
+      setAccion("editar");
+    } catch (error) {
+      console.error("Error guardando empleado:", error);
+      alert("Ocurrió un error al guardar el empleado");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEliminarEmpleado = async () => {
+    if (!empleadoEdit) {
+      alert("Selecciona un empleado de la tabla primero");
+      return;
     }
 
-    setEmpleadoEdit(empleadoConApellidos);
-    setAccion("editar");
+    const confirmar = window.confirm(
+      `¿Seguro que deseas eliminar al empleado con RUT "${empleadoEdit.rut}"?`
+    );
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`/api/empleados/${empleadoEdit.rut}`);
+
+      setEmpleados((prev) =>
+        prev.filter((e) => e.rut !== empleadoEdit.rut)
+      );
+
+      setEmpleadoEdit(null);
+      setAccion("mostrar");
+      alert("Empleado eliminado correctamente");
+    } catch (error) {
+      console.error("Error eliminando empleado:", error);
+      alert("Ocurrió un error al eliminar el empleado");
+    }
   };
 
   return (
@@ -52,6 +113,7 @@ function SeccionEmpleados({ empleados, setEmpleados, loading }) {
             empleadoEdit={empleadoEdit}
             handleGuardar={handleGuardarEmpleado}
             cancelar={cancelar}
+            saving={saving}
           />
         </div>
       )}
@@ -68,6 +130,12 @@ function SeccionEmpleados({ empleados, setEmpleados, loading }) {
             onClick={() => iniciarEditar(empleadoEdit)}
           >
             Modificar
+          </button>
+          <button
+            className="btn btn-danger"
+            onClick={handleEliminarEmpleado}
+          >
+            Eliminar
           </button>
           <button className="btn btn-outline-secondary" onClick={cancelar}>
             Mostrar

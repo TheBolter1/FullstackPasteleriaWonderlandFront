@@ -12,9 +12,7 @@ function ProductoForm({ productoEdit, onSave, cancelar }) {
     "Tortas Especiales",
   ];
 
-  // 👇 nuevo: código/id del producto
   const [codigo, setCodigo] = useState(productoEdit?.id || "");
-
   const [nombre, setNombre] = useState(productoEdit?.nombre || "");
   const [precio, setPrecio] = useState(productoEdit?.precio || "");
   const [categoria, setCategoria] = useState(
@@ -27,7 +25,7 @@ function ProductoForm({ productoEdit, onSave, cancelar }) {
     e.preventDefault();
 
     const producto = {
-      id: codigo, // 👈 esto es lo que usa el backend como PK
+      id: codigo,
       nombre,
       precio: Number(precio),
       categoria,
@@ -51,7 +49,7 @@ function ProductoForm({ productoEdit, onSave, cancelar }) {
               value={codigo}
               onChange={(e) => setCodigo(e.target.value)}
               required
-              disabled={!!productoEdit} // al editar no permites cambiar el id
+              disabled={!!productoEdit}
             />
           </div>
 

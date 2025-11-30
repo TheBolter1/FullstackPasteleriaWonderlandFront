@@ -23,20 +23,31 @@ function Admin() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const navigate = useNavigate();
+
+
   useEffect(() => {
-    fetch("/personal.json")
-      .then((res) => res.json())
-      .then((data) => setEmpleados(data))
-      .catch((err) => {
+    const cargarEmpleados = async () => {
+      try {
+        const res = await axios.get("/api/empleados");
+        console.log("Empleados desde backend:", res.data);
+        setEmpleados(res.data || []);
+      } catch (err) {
         console.error("Error cargando empleados:", err);
         setEmpleados([]);
-      })
-      .finally(() => setLoadingEmpleados(false));
+      } finally {
+        setLoadingEmpleados(false);
+      }
+    };
+
+    cargarEmpleados();
   }, []);
+
+
   useEffect(() => {
     const cargarProductos = async () => {
       try {
         const res = await axios.get("/api/producto");
+        console.log("Productos desde backend:", res.data);
         setProductos(res.data || []);
       } catch (err) {
         console.error("Error cargando productos:", err);
@@ -66,6 +77,7 @@ function Admin() {
     setProductoEdit(producto);
     setTabActivo("editarProducto");
   };
+
   const handleGuardarProducto = async (producto) => {
     try {
       let res;
@@ -94,6 +106,55 @@ function Admin() {
     }
   };
 
+  const handleEliminarProductoPorId = async () => {
+    const id = window.prompt("Ingresa el ID (código) del producto a eliminar:");
+    if (!id) return;
+
+    const confirmar = window.confirm(
+      `¿Seguro que deseas eliminar el producto con ID "${id}"?`
+    );
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`/api/producto/${id}`);
+      setProductos((prev) =>
+        prev.filter((p) => p.id?.toString() !== id.toString())
+      );
+
+      setProductoEdit(null);
+      setTabActivo("bandeja");
+      alert("Producto eliminado correctamente");
+    } catch (err) {
+      console.error("Error eliminando producto:", err);
+      alert("Ocurrió un error al eliminar el producto");
+    }
+  };
+
+  const handleEliminarEmpleadoPorRut = async () => {
+    const rut = window.prompt(
+      "Ingresa el RUT del empleado a eliminar (tal como está guardado, sin DV si así lo usas):"
+    );
+    if (!rut) return;
+
+    const confirmar = window.confirm(
+      `¿Seguro que deseas eliminar al empleado con RUT "${rut}"?`
+    );
+    if (!confirmar) return;
+
+    try {
+      await axios.delete(`/api/empleados/${rut}`);
+
+      setEmpleados((prev) =>
+        prev.filter((e) => e.rut?.toString() !== rut.toString())
+      );
+
+      alert("Empleado eliminado correctamente");
+    } catch (err) {
+      console.error("Error eliminando empleado:", err);
+      alert("Ocurrió un error al eliminar el empleado");
+    }
+  };
+
   const abrirPerfil = () => {
     setTabActivo("perfil");
     setSidebarVisible(false);
@@ -109,7 +170,9 @@ function Admin() {
         setTabActivo={setTabActivo}
         handleAgregarEmpleado={() => setTabActivo("empleados")}
         handleEditarEmpleado={() => setTabActivo("empleados")}
+        handleEliminarEmpleado={handleEliminarEmpleadoPorRut} 
         handleAgregarProducto={handleAgregarProducto}
+        handleEliminarProducto={handleEliminarProductoPorId}
         abrirPerfil={abrirPerfil}
         logout={logout}
       />
@@ -131,6 +194,57 @@ function Admin() {
             onSave={handleGuardarProducto}
             cancelar={() => setTabActivo("bandeja")}
           />
+        )}
+
+        {tabActivo === "productos" && (
+          <section className="mt-3">
+            <h2 className="h4 mb-3">Listado de productos</h2>
+            <div className="card shadow-sm">
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th>Código</th>
+                      <th>Nombre</th>
+                      <th>Categoría</th>
+                      <th>Precio</th>
+                      <th>Imagen (URL)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loadingProductos ? (
+                      <tr>
+                        <td colSpan="5" className="text-center text-muted">
+                          Cargando productos...
+                        </td>
+                      </tr>
+                    ) : productos.length > 0 ? (
+                      productos.map((p) => (
+                        <tr key={p.id}>
+                          <td>{p.id}</td>
+                          <td>{p.nombre}</td>
+                          <td>{p.categoria}</td>
+                          <td>${p.precio}</td>
+                          <td
+                            className="text-truncate"
+                            style={{ maxWidth: "250px" }}
+                          >
+                            {p.imagen}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" className="text-center text-muted">
+                          No hay productos
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         )}
 
         {tabActivo === "perfil" && <PerfilAdmin key="perfil" />}
