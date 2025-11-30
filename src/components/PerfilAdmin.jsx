@@ -1,42 +1,86 @@
-// src/components/PerfilAdmin.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "../api/axiosConfig";
 
 function PerfilAdmin() {
-  const admin = {
-    nombre: "Taylor Swift",
-    correo: "admin@wonderland.cl",
-    telefono: "+56998765432",
-  };
+  const [formData, setFormData] = useState({
+    nombres: "",
+    apellidos: "",
+    correo: "",
+  });
 
-  const [formData, setFormData] = useState(admin);
   const [editando, setEditando] = useState(false);
+
+  // Cargar usuario desde sessionStorage al entrar
+  useEffect(() => {
+    const nombres = sessionStorage.getItem("nombres") || "";
+    const apellidos = sessionStorage.getItem("apellidos") || "";
+    const correo = sessionStorage.getItem("correo") || "";
+
+    setFormData({ nombres, apellidos, correo });
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleGuardar = (e) => {
-    e.preventDefault();
+  const handleGuardar = async (e) => {
+  e.preventDefault();
+
+  try {
+    // 1️⃣ Obtener el usuario completo usando el correo
+    const res = await axios.get(`/api/user/correo/${formData.correo}`);
+    const adminActual = res.data;
+
+    // 2️⃣ Crear el payload completo manteniendo lo que no cambió
+    const payload = {
+      ...adminActual,
+      nombres: formData.nombres,
+      apellidos: formData.apellidos,
+      correo: formData.correo
+    };
+
+    // 3️⃣ Hacer el PUT con ID real
+    await axios.put(`/api/user/${adminActual.id}`, payload);
+
+    // 4️⃣ Actualizar sessionStorage
+    sessionStorage.setItem("nombres", payload.nombres);
+    sessionStorage.setItem("apellidos", payload.apellidos);
+    sessionStorage.setItem("correo", payload.correo);
+
     setEditando(false);
     alert("Perfil actualizado correctamente ✅");
-  };
+
+  } catch (err) {
+    console.error("ERROR PUT:", err.response?.data || err);
+    alert("Error al actualizar el perfil ❌");
+  }
+};
 
   return (
     <div className="card shadow-sm p-4" data-testid="perfil-admin">
       <h2 className="h5 mb-3">Perfil Administrador</h2>
-      <p className="text-muted mb-4">
-        Administra tu información de contacto y credenciales principales.
-      </p>
 
       <form onSubmit={handleGuardar}>
         <div className="mb-3">
-          <label className="form-label fw-semibold">Nombre</label>
+          <label className="form-label fw-semibold">Nombres</label>
           <input
             type="text"
-            name="nombre"
+            name="nombres"
             className="form-control"
-            value={formData.nombre}
+            value={formData.nombres}
+            onChange={handleChange}
+            disabled={!editando}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Apellidos</label>
+          <input
+            type="text"
+            name="apellidos"
+            className="form-control"
+            value={formData.apellidos}
             onChange={handleChange}
             disabled={!editando}
           />
@@ -50,19 +94,7 @@ function PerfilAdmin() {
             className="form-control"
             value={formData.correo}
             onChange={handleChange}
-            disabled={!editando}
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label fw-semibold">Teléfono</label>
-          <input
-            type="text"
-            name="telefono"
-            className="form-control"
-            value={formData.telefono}
-            onChange={handleChange}
-            disabled={!editando}
+            disabled
           />
         </div>
 

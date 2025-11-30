@@ -163,3 +163,10 @@
 @media (max-width: 768px){
   #Noticia{ margin: var(--space-md); padding: 1rem; }
 }
+
+.menu-item.has-children a {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+

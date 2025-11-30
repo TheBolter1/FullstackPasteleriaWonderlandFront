@@ -23,10 +23,10 @@ function Productos() {
   const [cantidad, setCantidad] = useState(1);
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  
   useEffect(() => {
     setLoading(true);
-    axios.get("http://localhost:9090/api/producto")
+    axios
+      .get("http://localhost:9090/api/producto")
       .then((res) => {
         const productosFiltrados = categoria
           ? res.data.filter((p) => p.categoria === categoria)
@@ -42,7 +42,6 @@ function Productos() {
       });
   }, [categoria]);
 
-
   const indexInicio = (paginaActual - 1) * productosPorPagina;
   const indexFin = indexInicio + productosPorPagina;
   const productosPagina = productos.slice(indexInicio, indexFin);
@@ -56,7 +55,6 @@ function Productos() {
     if (paginaActual > 1) setPaginaActual(paginaActual - 1);
   };
 
- 
   const abrirModal = (producto) => {
     setProductoSeleccionado(producto);
     setCantidad(1);
@@ -72,33 +70,39 @@ function Productos() {
       return;
     }
 
+    const productId =
+      productoSeleccionado.idProducto ?? productoSeleccionado.id;
+    const productName =
+      productoSeleccionado.nombreProducto ?? productoSeleccionado.nombre;
+
     const nuevoItem = {
-      id: productoSeleccionado.idProducto,
-      nombre: productoSeleccionado.nombreProducto,
+      id: productId,
+      nombre: productName,
       precio: productoSeleccionado.precio,
       imagen: productoSeleccionado.imagen,
       cantidad,
     };
 
-    const carritoActual = JSON.parse(localStorage.getItem("cart")) || [];
+    const carritoActual =
+      JSON.parse(sessionStorage.getItem("cart")) || [];
 
-    const existente = carritoActual.find((p) => p.id === nuevoItem.id);
+    const existente = carritoActual.find((p) => p.id === productId);
 
     if (existente) {
       existente.cantidad = Math.min(existente.cantidad + cantidad, 8);
       setAlerta({
-        msg: `${nuevoItem.nombre} ya estaba en el carrito. Cantidad actualizada.`,
+        msg: `${productName} ya estaba en el carrito. Cantidad actualizada.`,
         type: "info",
       });
     } else {
       carritoActual.push(nuevoItem);
       setAlerta({
-        msg: `${nuevoItem.nombre} agregado al carrito.`,
+        msg: `${productName} agregado al carrito.`,
         type: "success",
       });
     }
 
-    localStorage.setItem("cart", JSON.stringify(carritoActual));
+    sessionStorage.setItem("cart", JSON.stringify(carritoActual));
     window.dispatchEvent(new Event("cartUpdated"));
 
     setMostrarModal(false);
@@ -125,7 +129,6 @@ function Productos() {
       </div>
 
       <main className="container mt-4">
-
         <div className="d-flex justify-content-center mt-4 mb-2 gap-2">
           <button
             className="btn btn-outline-secondary btn-sm"
@@ -143,7 +146,6 @@ function Productos() {
           </button>
         </div>
 
-    
         <div
           id="productos-container"
           className="row g-3 justify-content-center"
@@ -154,7 +156,7 @@ function Productos() {
           ) : productosPagina.length > 0 ? (
             productosPagina.map((prod) => (
               <div
-                key={prod.idProducto}
+                key={prod.idProducto ?? prod.id}
                 className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex"
               >
                 <ProductCard
@@ -168,7 +170,6 @@ function Productos() {
           )}
         </div>
 
-       
         <div className="d-flex justify-content-center mt-3 gap-2">
           <button
             className="btn btn-outline-secondary btn-sm"
@@ -187,7 +188,6 @@ function Productos() {
         </div>
       </main>
 
-
       {mostrarModal && (
         <div
           className="modal fade show"
@@ -197,7 +197,8 @@ function Productos() {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  Agregar {productoSeleccionado?.nombreProducto}
+                  Agregar {productoSeleccionado?.nombreProducto ??
+                    productoSeleccionado?.nombre}
                 </h5>
                 <button
                   type="button"

@@ -24,12 +24,9 @@ function DetalleProducto() {
 
     const fetchProducto = async () => {
       try {
-        console.log("ID recibido en DetalleProducto:", id);
         const res = await axios.get(`http://localhost:9090/api/producto/${id}`);
-        console.log("Respuesta backend producto:", res.data);
         if (!res.data) throw new Error("Producto no encontrado");
         setProducto(res.data);
-        setError(false);
       } catch (err) {
         console.error("Error cargando producto:", err);
         setError(true);
@@ -53,32 +50,37 @@ function DetalleProducto() {
   const agregarAlCarrito = () => {
     if (!producto) return;
 
-    const carritoActual =
-      JSON.parse(sessionStorage.getItem("cart")) || [];
+    const carritoActual = JSON.parse(sessionStorage.getItem("cart")) || [];
 
-    const existente = carritoActual.find(
-      (p) => p.idProducto === producto.idProducto
-    );
+    const productId = producto.idProducto ?? producto.id;
+    const productName = producto.nombreProducto ?? producto.nombre;
+
+    const nuevoItem = {
+      id: productId,
+      nombre: productName,
+      precio: producto.precio,
+      imagen: producto.imagen,
+      cantidad,
+    };
+
+    const existente = carritoActual.find((p) => p.id === productId);
 
     if (existente) {
-      const nuevaCantidad = Math.min(existente.cantidad + cantidad, 8);
-      existente.cantidad = nuevaCantidad;
-      if (existente.cantidad === 8) {
-        setAlerta({ msg: "Cantidad máxima: 8 unidades", type: "warning" });
-      }
+      existente.cantidad = Math.min(existente.cantidad + cantidad, 8);
+      setAlerta({
+        msg: `${productName} cantidad actualizada`,
+        type: "info",
+      });
     } else {
-      carritoActual.push({ ...producto, cantidad });
+      carritoActual.push(nuevoItem);
+      setAlerta({
+        msg: `${productName} agregado al carrito (${cantidad})`,
+        type: "success",
+      });
     }
 
     sessionStorage.setItem("cart", JSON.stringify(carritoActual));
     window.dispatchEvent(new Event("cartUpdated"));
-
-    setAlerta({
-      msg: `${producto.nombreProducto} agregado al carrito (${cantidad} unidad${
-        cantidad > 1 ? "es" : ""
-      })`,
-      type: "success",
-    });
   };
 
   if (loading) {
@@ -119,15 +121,13 @@ function DetalleProducto() {
         type={alerta.type}
         onClose={() => setAlerta({ msg: "", type: "" })}
       />
+
       <div className="container-fluid py-5 px-md-5 bg-light">
         <div className="container-lg p-4 bg-white rounded-4 shadow-sm">
           <nav aria-label="breadcrumb" className="mb-4">
             <ol className="breadcrumb mb-0">
               <li className="breadcrumb-item">
-                <Link
-                  to="/"
-                  className="text-decoration-none text-secondary"
-                >
+                <Link to="/" className="text-decoration-none text-secondary">
                   Inicio
                 </Link>
               </li>
@@ -139,11 +139,8 @@ function DetalleProducto() {
                   Productos
                 </Link>
               </li>
-              <li
-                className="breadcrumb-item active text-dark"
-                aria-current="page"
-              >
-                {producto.nombreProducto}
+              <li className="breadcrumb-item active text-dark" aria-current="page">
+                {producto.nombreProducto ?? producto.nombre}
               </li>
             </ol>
           </nav>
@@ -152,7 +149,7 @@ function DetalleProducto() {
             <div className="col-lg-6 col-md-6 text-center">
               <img
                 src={producto.imagen}
-                alt={producto.nombreProducto}
+                alt={producto.nombreProducto ?? producto.nombre}
                 className="img-fluid rounded-4 shadow"
                 style={{
                   maxHeight: "480px",
@@ -167,14 +164,13 @@ function DetalleProducto() {
                 className="text-uppercase fw-bold display-5 mb-3"
                 style={{ color: "#b1976b" }}
               >
-                {producto.nombreProducto}
+                {producto.nombreProducto ?? producto.nombre}
               </h2>
-              <h4
-                className="fw-semibold mb-4"
-                style={{ color: "#6c757d" }}
-              >
+
+              <h4 className="fw-semibold mb-4" style={{ color: "#6c757d" }}>
                 ${producto.precio?.toLocaleString("es-CL") || "0"}
               </h4>
+
               <p
                 className="text-muted"
                 style={{
@@ -201,6 +197,7 @@ function DetalleProducto() {
                   >
                     −
                   </button>
+
                   <input
                     type="text"
                     value={cantidad}
@@ -213,6 +210,7 @@ function DetalleProducto() {
                       color: "#5a5a5a",
                     }}
                   />
+
                   <button
                     type="button"
                     className="btn btn-sm text-secondary border-0 px-2"
@@ -222,6 +220,7 @@ function DetalleProducto() {
                     +
                   </button>
                 </div>
+
                 <div className="d-flex flex-column flex-sm-row gap-3">
                   <button
                     className="btn text-white fw-semibold px-4 py-2"
@@ -238,6 +237,7 @@ function DetalleProducto() {
                     <i className="bi bi-cart-plus me-2"></i>
                     Añadir al carrito
                   </button>
+
                   <button
                     className="btn text-white fw-semibold px-4 py-2"
                     style={{
@@ -258,7 +258,8 @@ function DetalleProducto() {
         </div>
       </div>
 
-      <Recomendados productoId={producto?.idProducto} />
+      <Recomendados productoId={producto?.idProducto ?? producto?.id} />
+
       <Footer />
     </>
   );

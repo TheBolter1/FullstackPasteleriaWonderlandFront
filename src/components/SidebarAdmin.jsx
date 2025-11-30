@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+
+
 function SidebarAdmin({
   visible,
   toggleOffcanvas,
@@ -10,7 +13,10 @@ function SidebarAdmin({
   logout,
   setTabActivo,
   abrirPerfil
+  
 }) {
+  const rol = sessionStorage.getItem("rol");
+
   return (
   
     <div
@@ -32,11 +38,21 @@ function SidebarAdmin({
       <div className="offcanvas-body d-flex flex-column p-0">
         <div className="px-3 pt-2 pb-1 small text-uppercase text-muted">Inicio</div>
         <nav className="list-group list-group-flush mb-2">
+
+           {rol === "ADMIN" && (
+            <Link
+              to="/home"
+              className="list-group-item list-group-item-action fw-semibold"
+              onClick={toggleOffcanvas}
+            >
+              <i className="bi bi-shop me-2"></i> Home
+            </Link>
+          )}
           <button
             className="list-group-item list-group-item-action"
             onClick={() => { setTabActivo("bandeja"); toggleOffcanvas(); }}
           >
-            <i className="bi bi-house-door me-2"></i> Home
+            <i className="bi bi-house-door me-2"></i> Mensajes
           </button>
         </nav>
         <div className="px-3 pt-2 pb-1 small text-uppercase text-muted">Gestión de productos</div>

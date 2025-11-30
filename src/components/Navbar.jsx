@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 function Navbar() {
   const [cartCount, setCartCount] = useState(0);
+  const [rol, setRol] = useState(null);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -13,6 +14,9 @@ function Navbar() {
 
   useEffect(() => {
   
+   
+    const storedRol = sessionStorage.getItem("rol");
+    setRol(storedRol);
     const storedCart = JSON.parse(sessionStorage.getItem("cart")) || [];
     const total = storedCart.reduce((sum, item) => sum + item.cantidad, 0);
     setCartCount(total);
@@ -49,11 +53,10 @@ function Navbar() {
             </Link>
           </li>
 
-          <li className="menu-item has-children">
+                  <li className="menu-item has-children">
             <Link to="/productos" className="text-decoration-none">
-              Productos ▾
+              Productos <span className="arrow">▾</span>
             </Link>
-            <button className="submenu-toggle">▾</button>
             <ul className="sub-menu">
               <li className="menu-item">
                 <Link to="/productos?categoria=Tortas Cuadradas">
@@ -109,25 +112,26 @@ function Navbar() {
               Mi Cuenta
             </Link>
           </li>
+          
+          {rol === "ADMIN" && (
+        <li className="menu-item">
+          <Link to="/administracion" className="text-decoration-none">
+            Panel Administrador
+          </Link>
+        </li>
+      )}
 
-          <li className="menu-item">
-            <button
-              onClick={handleLogout}
-              className="text-decoration-none"
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                font: "inherit",
-                color: "inherit",
-              }}
-            >
-              Cerrar sesión
-            </button>
-          </li>
+            <li className="menu-item">
+        <Link
+          to="#"
+          className="text-decoration-none"
+          onClick={handleLogout}
+        >
+          Cerrar sesión
+        </Link>
+      </li>
+
         </ul>
-
         <Link
           to="/carro-de-compras"
           className="action-btn text-decoration-none position-relative"
