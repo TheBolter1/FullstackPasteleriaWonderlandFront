@@ -22,7 +22,6 @@ const CrearProducto = () => {
     axios.post("http://localhost:9090/api/producto", nuevoProducto)
       .then(response => {
         console.log("Producto creado:", response.data);
-        // Limpiar formulario
         setNombreProducto("");
         setPrecio("");
         setCategoria("");

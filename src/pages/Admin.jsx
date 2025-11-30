@@ -19,9 +19,10 @@ function Admin() {
   const [tabActivo, setTabActivo] = useState("bandeja");
   const [productoEdit, setProductoEdit] = useState(null);
   const [sidebarVisible, setSidebarVisible] = useState(false);
+
   const navigate = useNavigate();
 
-  // 🔹 Cargar mensajes y empleados al iniciar
+
   useEffect(() => {
     fetch("/mensajes.json")
       .then(res => res.json())
@@ -34,30 +35,29 @@ function Admin() {
       .catch(err => console.error("Error cargando empleados:", err));
   }, []);
 
-  // 🔹 Mostrar u ocultar Sidebar
+
   const toggleSidebar = () => setSidebarVisible(!sidebarVisible);
 
-  // 🔹 Cerrar sesión
+ 
   const logout = () => {
-    localStorage.removeItem("usuarioActivo");
-    localStorage.removeItem("rol");
-    navigate("/inicio-sesion");
+    sessionStorage.clear();
+    navigate("/inicio-sesion?forceLogin=true");
   };
 
-  // 🔹 Agregar producto
+  
   const handleAgregarProducto = () => {
     setProductoEdit(null);
     setTabActivo("agregarProducto");
   };
 
-  // 🔹 Editar producto
+ 
   const handleEditarProducto = (producto) => {
     if (!producto) return alert("Selecciona un producto primero");
     setProductoEdit(producto);
     setTabActivo("editarProducto");
   };
 
-  // 🔹 Guardar producto
+  
   const handleGuardarProducto = (producto) => {
     const nuevosProductos = productoEdit
       ? productos.map(p => (p.id === producto.id ? producto : p))
@@ -69,7 +69,7 @@ function Admin() {
     localStorage.setItem("catalogoProductos", JSON.stringify(nuevosProductos));
   };
 
-  // 🔹 Abrir perfil administrador
+
   const abrirPerfil = () => {
     setTabActivo("perfil");
     setSidebarVisible(false);
@@ -77,10 +77,10 @@ function Admin() {
 
   return (
     <div className="admin-container">
-      {/* Header */}
+
       <HeaderAdmin toggleOffcanvas={toggleSidebar} />
 
-      {/* Sidebar */}
+    
       <SidebarAdmin
         visible={sidebarVisible}
         toggleOffcanvas={toggleSidebar}
@@ -92,12 +92,14 @@ function Admin() {
         logout={logout}
       />
 
-      {/* Contenido principal */}
+ 
       <main className="px-3 px-md-4 mt-3">
         {tabActivo === "bandeja" && <BandejaContacto mensajes={mensajes} />}
+
         {tabActivo === "empleados" && (
           <SeccionEmpleados empleados={empleados} setEmpleados={setEmpleados} />
         )}
+
         {(tabActivo === "agregarProducto" || tabActivo === "editarProducto") && (
           <ProductoForm
             productoEdit={productoEdit}
@@ -105,7 +107,9 @@ function Admin() {
             cancelar={() => setTabActivo("bandeja")}
           />
         )}
+
         {tabActivo === "perfil" && <PerfilAdmin key="perfil" />}
+
         {tabActivo === "topProductos" && <TopProductos />}
       </main>
     </div>

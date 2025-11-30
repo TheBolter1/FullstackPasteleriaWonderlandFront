@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import axios from "axios";
+import axios from "../api/axiosConfig"; 
 
 function Login() {
   const [correo, setCorreo] = useState("");
@@ -12,11 +12,12 @@ function Login() {
   const params = new URLSearchParams(location.search);
   const forceLogin = params.get("forceLogin");
 
+  // Si el usuario ya está logueado, evitar que vuelva al login
   useEffect(() => {
-    const usuarioActivo = localStorage.getItem("usuarioActivo");
-    const rol = localStorage.getItem("rol");
+    const token = sessionStorage.getItem("token");
+    const rol = sessionStorage.getItem("rol");
 
-    if (!forceLogin && usuarioActivo) {
+    if (!forceLogin && token) {
       navigate(rol === "ADMIN" ? "/administracion" : "/home");
     }
   }, [navigate, forceLogin]);
@@ -26,49 +27,41 @@ function Login() {
     setError("");
 
     try {
-      const correoEncoded = encodeURIComponent(correo);
-
-      const res = await axios.get(
-        `http://localhost:9090/api/user/correo/${correoEncoded}`
+      const response = await axios.post(
+        "http://localhost:9090/api/user/login",
+        {
+          correo,
+          contrasena,
+        }
       );
 
-      const usuario = res.data;
+      const data = response.data;
 
-      if (!usuario) {
-        setError("Usuario no encontrado ❌");
-        return;
-      }
+  
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("correo", data.correo);
+      sessionStorage.setItem("rol", data.rol);
+      sessionStorage.setItem("nombres", data.nombres || "");
+      sessionStorage.setItem("apellidos", data.apellidos || "");
 
-      if (!usuario.passwordHash) {
-        setError("Error al validar credenciales ❌");
-        return;
-      }
 
-      if (usuario.passwordHash !== contrasena) {
-        setError("Usuario o contraseña incorrectos ❌");
-        return;
-      }
-
-      // Guardar sesión
-      localStorage.setItem("usuarioActivo", usuario.correo);
-      localStorage.setItem("rol", usuario.rol);
-      localStorage.setItem("nombres", usuario.nombres);
-      localStorage.setItem("apellidos", usuario.apellidos);
-
-      navigate(usuario.rol === "ADMIN" ? "/administracion" : "/home");
-    } catch (err) {
-      console.error("Error en login:", err);
-      if (err.response?.status === 404) {
-        setError("Usuario no encontrado ❌");
+      if (data.rol === "ADMIN") {
+        navigate("/administracion");
       } else {
-        setError("Error de conexión con el servidor");
+        navigate("/home");
+      }
+    } catch (err) {
+      if (err.response?.status === 401) {
+        setError("Credenciales incorrectas ❌");
+      } else {
+        setError("Error al conectar con el servidor");
       }
     }
   };
 
   return (
     <div className="login-page vh-100 d-flex flex-column">
-      {/* HEADER */}
+
       <header>
         <nav className="nav">
           <Link to="/home">
@@ -81,40 +74,44 @@ function Login() {
         </nav>
       </header>
 
-      {/* MAIN */}
+
       <main>
         <div className="wrap" id="Login">
           <div className="card shadow-sm">
             <div className="card-body">
               <h2>
-                Inicio de Sesión<span className="title-underline"></span>
+                Inicio de Sesión <span className="title-underline"></span>
               </h2>
 
               {error && <div className="alert alert-danger">{error}</div>}
 
               <form onSubmit={handleSubmit} noValidate>
                 <div className="field mb-3">
-                  <label className="label" htmlFor="correo">CORREO</label>
+                  <label className="label" htmlFor="correo">
+                    CORREO
+                  </label>
                   <input
                     id="correo"
                     type="email"
                     className={`form-control ${error ? "is-invalid" : ""}`}
                     value={correo}
                     onChange={(e) => setCorreo(e.target.value)}
-                    onFocus={() => error && setError("")}
+                    onFocus={() => setError("")}
                     required
                   />
                 </div>
 
                 <div className="field mb-2">
-                  <label className="label" htmlFor="contrasena">CONTRASEÑA</label>
+                  <label className="label" htmlFor="contrasena">
+                    CONTRASEÑA
+                  </label>
                   <input
                     id="contrasena"
                     type="password"
                     className={`form-control ${error ? "is-invalid" : ""}`}
                     value={contrasena}
                     onChange={(e) => setContrasena(e.target.value)}
-                    onFocus={() => error && setError("")}
+                    onFocus={() => setError("")}
                     required
                   />
                 </div>
@@ -130,7 +127,6 @@ function Login() {
                     Acceder
                   </button>
 
-                  {/* CORREGIDO: antes decía /crear-producto */}
                   <Link to="/register" className="btn btn-outline flex-grow-1">
                     Crear cuenta
                   </Link>
@@ -141,11 +137,13 @@ function Login() {
         </div>
       </main>
 
-      {/* FOOTER */}
+ 
       <footer id="site-footer-login" className="mt-auto py-3">
         <div className="footer-content text-center">
           <p className="mb-1">&copy; Pastelería Wonderland — 2025</p>
-          <a href="#" className="small text-decoration-none">Política de privacidad</a>
+          <a href="#" className="small text-decoration-none">
+            Política de privacidad
+          </a>
         </div>
       </footer>
     </div>

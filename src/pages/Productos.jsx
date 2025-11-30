@@ -23,11 +23,10 @@ function Productos() {
   const [cantidad, setCantidad] = useState(1);
   const [mostrarModal, setMostrarModal] = useState(false);
 
-  // Cargar productos
+  
   useEffect(() => {
     setLoading(true);
-    axios
-      .get("http://localhost:8080/api/producto")
+    axios.get("http://localhost:9090/api/producto")
       .then((res) => {
         const productosFiltrados = categoria
           ? res.data.filter((p) => p.categoria === categoria)
@@ -43,7 +42,7 @@ function Productos() {
       });
   }, [categoria]);
 
-  // Paginación
+
   const indexInicio = (paginaActual - 1) * productosPorPagina;
   const indexFin = indexInicio + productosPorPagina;
   const productosPagina = productos.slice(indexInicio, indexFin);
@@ -57,7 +56,7 @@ function Productos() {
     if (paginaActual > 1) setPaginaActual(paginaActual - 1);
   };
 
-  // Modal agregar al carrito
+ 
   const abrirModal = (producto) => {
     setProductoSeleccionado(producto);
     setCantidad(1);
@@ -126,7 +125,7 @@ function Productos() {
       </div>
 
       <main className="container mt-4">
-        {/* Botones de paginación */}
+
         <div className="d-flex justify-content-center mt-4 mb-2 gap-2">
           <button
             className="btn btn-outline-secondary btn-sm"
@@ -144,7 +143,7 @@ function Productos() {
           </button>
         </div>
 
-        {/* Productos */}
+    
         <div
           id="productos-container"
           className="row g-3 justify-content-center"
@@ -169,7 +168,7 @@ function Productos() {
           )}
         </div>
 
-        {/* Botones de paginación abajo */}
+       
         <div className="d-flex justify-content-center mt-3 gap-2">
           <button
             className="btn btn-outline-secondary btn-sm"
@@ -188,7 +187,7 @@ function Productos() {
         </div>
       </main>
 
-      {/* Modal */}
+
       {mostrarModal && (
         <div
           className="modal fade show"

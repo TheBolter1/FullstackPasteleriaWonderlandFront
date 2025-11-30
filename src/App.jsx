@@ -1,6 +1,9 @@
-import './style/style.css'
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
+import "./style/style.css";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import React, { Suspense, lazy } from "react";
+
+import PrivateRoute from "./components/PrivateRoute.jsx";
+import AdminRoute from "./components/AdminRoute.jsx";
 
 const Home = lazy(() => import("./pages/Home.jsx"));
 const Productos = lazy(() => import("./pages/Productos.jsx"));
@@ -15,26 +18,66 @@ const CrearProducto = lazy(() => import("./components/CrearProductos.jsx"));
 function App() {
   return (
     <BrowserRouter>
-      <Suspense fallback={
-        <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Cargando...</span>
+      <Suspense
+        fallback={
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ height: "100vh" }}
+          >
+            <div className="spinner-border" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
           </div>
-        </div>
-      }>
+        }
+      >
         <Routes>
+  
           <Route path="/" element={<Navigate to="/home" />} />
+
+          {/* Rutas públicas */}
           <Route path="/home" element={<Home />} />
           <Route path="/productos" element={<Productos />} />
           <Route path="/contacto" element={<Contacto />} />
-          <Route path="/carro-de-compras" element={<Carro />} />
-          <Route path="/producto/:id" element={<DetalleProducto />} />
           <Route path="/inicio-sesion" element={<Login />} />
-          <Route path="/administracion" element={<Admin />} />
-          
-          
-          <Route path="/lista-productos" element={<ListaProductos />} />
-          <Route path="/crear-producto" element={<CrearProducto />} />
+
+          <Route path="/producto/:id" element={<DetalleProducto />} />
+
+          <Route
+            path="/carro-de-compras"
+            element={
+              <PrivateRoute>
+                <Carro />
+              </PrivateRoute>
+            }
+          />
+
+  
+
+  
+          <Route
+            path="/administracion"
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/lista-productos"
+            element={
+              <AdminRoute>
+                <ListaProductos />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/crear-producto"
+            element={
+              <AdminRoute>
+                <CrearProducto />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </Suspense>
     </BrowserRouter>

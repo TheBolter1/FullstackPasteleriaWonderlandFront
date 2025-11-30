@@ -5,13 +5,13 @@ function TopProductos() {
   const [productos, setProductos] = useState([]);
 
   useEffect(() => {
-    // Llamada al backend
-    axios
-      .get("http://localhost:9090/api/producto") // ← puerto corregido
-      .then((response) => {
-        const catalogo = response.data; // asumimos que el backend devuelve un array de productos
 
-        // Normalizar campos (por si backend usa nombreProducto / idProducto)
+    axios
+      .get("http://localhost:9090/api/producto") 
+      .then((response) => {
+        const catalogo = response.data; 
+
+       
         const catalogoNormalizado = catalogo.map((prod) => ({
           id: prod.id || prod.idProducto,
           nombre: prod.nombre || prod.nombreProducto,
@@ -21,19 +21,19 @@ function TopProductos() {
           ventas: prod.ventas || 0,
         }));
 
-        // Agregar ventas semanales aleatorias (ejemplo)
+    
         const catalogoConVentas = catalogoNormalizado.map((prod) => ({
           ...prod,
           ventasSemanales: Math.floor(Math.random() * (60 - 5 + 1)) + 5,
         }));
 
-        // Top 10
+      
         const top10 = catalogoConVentas.slice(0, 10);
         setProductos(top10);
       })
       .catch((error) => {
         console.error("Error al cargar los productos:", error);
-        setProductos([]); // en caso de error dejamos el array vacío
+        setProductos([]);
       });
   }, []);
 
