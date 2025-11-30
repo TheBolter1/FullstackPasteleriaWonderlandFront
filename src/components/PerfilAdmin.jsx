@@ -28,11 +28,8 @@ function PerfilAdmin() {
   e.preventDefault();
 
   try {
-    // 1️⃣ Obtener el usuario completo usando el correo
     const res = await axios.get(`/api/user/correo/${formData.correo}`);
     const adminActual = res.data;
-
-    // 2️⃣ Crear el payload completo manteniendo lo que no cambió
     const payload = {
       ...adminActual,
       nombres: formData.nombres,
@@ -40,10 +37,9 @@ function PerfilAdmin() {
       correo: formData.correo
     };
 
-    // 3️⃣ Hacer el PUT con ID real
     await axios.put(`/api/user/${adminActual.id}`, payload);
 
-    // 4️⃣ Actualizar sessionStorage
+  
     sessionStorage.setItem("nombres", payload.nombres);
     sessionStorage.setItem("apellidos", payload.apellidos);
     sessionStorage.setItem("correo", payload.correo);

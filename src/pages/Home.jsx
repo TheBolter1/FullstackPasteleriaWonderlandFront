@@ -13,7 +13,6 @@ function Home() {
     const [productos, setProductos] = useState([]);
     const [topProductos, setTopProductos] = useState([]);
 
-    // Traer productos desde el backend
     useEffect(() => {
         axios.get("http://localhost:9090/api/producto")
             .then(res => {
