@@ -1,14 +1,19 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: './src/tests/setuptests.jsx',
+
+    
+    setupFiles: './src/tests/Setuptests.jsx',
+
     include: ['src/tests/**/*.test.jsx'],
+    mockReset: true,            
+    restoreMocks: true,         
+
     coverage: {
       provider: 'v8',
       reporter: ['text', 'text-summary', 'html', 'lcov'],
@@ -17,7 +22,7 @@ export default defineConfig({
         'node_modules/',
         'src/tests/**',
         'dist/**',
-        'api/**', 
+        'api/**',
         'vite.config.js',
         'eslint.config.js',
         '**/__mocks__/**',

@@ -1,11 +1,13 @@
 import '../style/style.css';
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ProductCard from "../components/ProductCard";
 import Navbar from "../components/Navbar";
 import Footer from '../components/Footer.jsx';
 import NoticiaHome from "../components/NoticiaHome.jsx";
+
 
 document.title = "Inicio | Pastelería Wonderland";
 

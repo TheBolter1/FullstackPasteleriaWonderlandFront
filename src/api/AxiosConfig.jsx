@@ -1,15 +1,21 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "http://localhost:9090", 
-});
+let api;
 
-api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+try {
+  api = axios.create({
+    baseURL: "http://localhost:9090",
+  });
+} catch {
+
+  api = axios;
+}
+if (api?.interceptors?.request?.use) {
+  api.interceptors.request.use((config) => {
+    const token = sessionStorage.getItem("token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  });
+}
 
 export default api;

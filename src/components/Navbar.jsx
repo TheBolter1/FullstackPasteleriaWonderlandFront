@@ -7,11 +7,11 @@ function Navbar() {
   const [rol, setRol] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    navigate("/inicio-sesion");
-  };
-
+ const handleLogout = (e) => {
+  e.preventDefault();                      
+  sessionStorage.clear();                    
+  navigate("/inicio-sesion?forceLogin=true", { replace: true }); 
+};
   useEffect(() => {
   
    
@@ -121,15 +121,15 @@ function Navbar() {
         </li>
       )}
 
-            <li className="menu-item">
-        <Link
-          to="#"
-          className="text-decoration-none"
-          onClick={handleLogout}
-        >
-          Cerrar sesión
-        </Link>
-      </li>
+          <li className="menu-item">
+  <Link
+    to="#"
+    className="text-decoration-none"
+    onClick={handleLogout}
+  >
+    Cerrar sesión
+  </Link>
+</li>
 
         </ul>
         <Link
